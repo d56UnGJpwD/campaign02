@@ -16,6 +16,9 @@ public class Simulation {
     private int maxNumQueues;
     private Random r;
     private int numIterations = 50;
+    private int timer = 720;
+    private int currentTime;
+
     // You will probably need more fields
 
     /**
@@ -33,7 +36,7 @@ public class Simulation {
     }
 
     /**
-     * Constructs a new siulation with the given arrival rate and maximum number of queues. The Random
+     * Constructs a new simulation with the given arrival rate and maximum number of queues. The Random
      * number generator is seeded with the provided seed value, and the number of iterations is set to
      * the provided value.
      *
@@ -51,7 +54,8 @@ public class Simulation {
     /**
      * Executes the Simulation
      */
-    public void runSimulation() {
+    public void runSimulation()
+    {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
