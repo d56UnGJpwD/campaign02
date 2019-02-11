@@ -82,14 +82,13 @@ public class Simulation {
                     arrLines[count] = new LinkedQueue<Double>();
                 }
 
-                //for loop for keeping track of time
+                //while the timer is < 720
                 int timer = 0;
                 while(timer < 720)
                 {
                     //people arriving each minute
                     int arriving = getRandomNumPeople(arrivalRate);
-
-                    //if only 1 line
+                    //if only 1 line we dont need to check for the shortest line
                     if(linesOpen == 1){
 
                         //offer each person to our linked queue, the value is their time spent waiting
