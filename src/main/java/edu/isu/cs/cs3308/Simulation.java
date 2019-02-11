@@ -16,11 +16,6 @@ public class Simulation {
     private int maxNumQueues;
     private Random r;
     private int numIterations = 50;
-    //added the timer, current time tracker, and the average wait time
-    private int timer = 720;
-    private int trackTime = 0;
-
-
     // You will probably need more fields
 
     /**
@@ -56,116 +51,112 @@ public class Simulation {
     /**
      * Executes the Simulation
      */
-    public void runSimulation()
-    {
+    public void runSimulation() {
 
-        //one loop
-        //make a queue
-        //add a random number of people to it
-        //add 1 min
-        //first group done
+        //runs the simulation for increasing lines up to the max number of lines
 
-        //add another random number of people
-        //if total amount in line is >= 2 remove 2 from queue for every person that got added
-        //add 1 min
-        //repeat
-
-        //System.out.println("arrivalRate: " + arrivalRate);
-
-        for(int lineCount = 1; lineCount <= maxNumQueues; lineCount++)
+        for(int linesOpen = 1; linesOpen <= maxNumQueues; linesOpen++)
         {
-            //creates a wait time for each line
-            double aveWaitTime = 0;
+            //average wait time total for each sim needs to be reset between sim
+            double aveTotalWaitTime = 0.0;
 
-            for(int run = 0; run < numIterations; run++)
+            //runs the simulation a set number of times
+            for(int runs = 0; runs < numIterations; runs++)
             {
-                int runTime = 0;
-                double runWaitTimeAve = 0;
-                int peopleProcessed = 0;
+                //because I am going to be finding averages, I need to use doubles and then just
+                //have it truncate when I convert them to ints
 
-                LinkedQueue[] linesArr = new LinkedQueue[lineCount];
+                //total people processed
+                Double peopleProcessed = 0.0;
+                //time taken for all those people
+                Double totalTimeTaken = 0.0;
+                //average wait time of each run of the sim
+                Double aveRunWaitTime;
 
-                for(int j = 0; j < lineCount; j++)
+                //I used a linked queue array to hold all of my individual lines
+                LinkedQueue[] arrLines = new LinkedQueue[linesOpen];
+
+                //creates a new line to represent every open line
+                for(int count = 0; count < linesOpen; count++)
                 {
-                    linesArr[j] = new LinkedQueue<Double>();
+                    arrLines[count] = new LinkedQueue<Double>();
                 }
 
-                while(trackTime < timer)
+                //for loop for keeping track of time
+                int timer = 0;
+                while(timer < 720)
                 {
-                    int people = getRandomNumPeople(arrivalRate);
+                    //people arriving each minute
+                    int arriving = getRandomNumPeople(arrivalRate);
 
-                    if(lineCount == 1)
-                    {
-                        for(int x = people; x > 0; x--)
+                    //if only 1 line
+                    if(linesOpen == 1){
+
+                        //offer each person to our linked queue, the value is their time spent waiting
+                        for(int peopleToAdd = arriving; peopleToAdd > 0; peopleToAdd--)
                         {
-                            linesArr[0].offer(0);
+                            arrLines[0].offer(0.0);
                         }
                     }
+                    //if more than 1 line, check for shortest line
                     else
                     {
-                        for(int x = people; x > 0; x--)
+                        for(int peopleToAdd = arriving; peopleToAdd > 0; peopleToAdd--)
                         {
-                            //how the person picks which line to go into
-                            //shortest = index of shortest array position is current array
-                            int shortest = 0;
-                            int currPosition = 1;
+                            //variables for tracking the shortest line and our current position
+                            int currentPos = 0;
+                            int shortestLine = 1;
 
-                            while(currPosition < linesArr.length)
+                            while(shortestLine < arrLines.length)
                             {
-                                if(linesArr[shortest].size() > linesArr[currPosition].size())
+                                //set our position to the shortest line
+                                if (arrLines[currentPos].size() > arrLines[shortestLine].size())
                                 {
-                                    //set curret position to shortest
-                                    shortest = currPosition;
+                                    currentPos = shortestLine;
                                 }
+                                //check the next line
                                 else
                                 {
-                                    //move over 1 array
-                                    currPosition++;
+                                    shortestLine++;
                                 }
                             }
-                            //add person to the shortest line
-                            linesArr[shortest].offer(0);
+                            //after finding the shortest line, we add our person to that line
+                            arrLines[currentPos].offer(0.0);
                         }
                     }
 
-                    for(int i = 0; i < linesArr.length; i++)
+                    //this removes our people every minute
+                    for (int i = 0; i < arrLines.length; i++)
                     {
-                        //remove the first two people if amount of people > 2
-                        //if less < 2 then remove all remaining
-                        if(linesArr[i].size() >= 2)
+                        //removes the first two people from a line as long as the line has people in it.  Adds to the totalPeople and totalWaitTime
+                        for (int removal = 0; removal < 2; removal++)
                         {
-
-                            runTime += (int)linesArr[i].poll();
-                            runTime += (int)linesArr[i].poll();
-                            peopleProcessed++;
-                        }
-                        else
-                        {
-                            while(!linesArr[i].isEmpty())
+                            //this handles all removes, even if the amount of people in the line are < 2
+                            if (arrLines[i].peek() != null)
                             {
-                                runTime += (int)linesArr[i].poll();
-                                peopleProcessed++;
+                                //increase time taken, and people people processed tracker
+                                totalTimeTaken += (Double)arrLines[i].poll();
+                                peopleProcessed += 1.0;
                             }
                         }
-                        //calculates wait time for this line
-                        for(int k = 0; k < linesArr[i].size(); k++)
+                        //adds 1 minute to every polled person in the tracker
+                        int j = 0;
+                        while(j < arrLines[i].size())
                         {
-                            linesArr[i].offer((int)linesArr[i].poll() + 1);
+                            arrLines[i].offer((Double)arrLines[i].poll() + 1.0);
+                            j++;
                         }
-
                     }
-                    runWaitTimeAve = runTime/peopleProcessed;
-                    aveWaitTime += runWaitTimeAve;
-                    timer--;
+                    timer++;
                 }
-
+                //calculates the average run time and then adds it to the total wait time
+                aveRunWaitTime = totalTimeTaken/peopleProcessed;
+                aveTotalWaitTime += aveRunWaitTime;
             }
-
-            aveWaitTime = aveWaitTime/numIterations;
-            //System.out.println((int)aveWaitTime);
-            System.out.println("Average wait time using " + lineCount + " queue(s): " + (int)aveWaitTime);
+            //finds the average of all the runs;
+            aveTotalWaitTime = aveTotalWaitTime/numIterations;
+            System.out.println("Average wait time using " + linesOpen + " queue(s): " + (int)aveTotalWaitTime);
         }
-
     }
 
     /**
@@ -174,7 +165,6 @@ public class Simulation {
      * @param avg The average number of people to generate
      * @return An integer representing the number of people generated this minute
      */
-
     //Don't change this method.
     private static int getRandomNumPeople(double avg) {
         Random r = new Random();
